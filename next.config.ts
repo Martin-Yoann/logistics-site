@@ -1,38 +1,42 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 基础配置
-  turbopack: {
-    // 明确指定项目根目录
-    root: process.cwd(),
-  },
   reactStrictMode: true,
   
-  // devIndicators 应该直接放在根配置中，而不是 experimental 里
-  devIndicators: {
-    buildActivity: false,
-    buildActivityPosition: 'bottom-right',
-  },
+  // Cloudflare Pages 最佳实践
+  output: process.env.CF_PAGES === '1' ? 'export' : undefined,
   
-  // 如果需要启用 Turbopack
-  experimental: {
-    // 正确的位置 - 只在 experimental 中放实验性功能
-    // turbopack: {
-    //   // 如果需要配置 Turbopack，可以在这里添加
-    // }
-  },
+  // 静态导出相关配置
+  trailingSlash: true,
   
-  // 其他配置
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  
-  // 静态导出配置（如果需要）
-  output: 'standalone',
-  
-  // 图片优化配置
+  // 图片配置
   images: {
-    domains: [], // 添加允许的图片域名
-    unoptimized: false,
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+  
+  // 跨域头
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+    ];
   },
 };
 
